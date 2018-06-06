@@ -12,8 +12,8 @@ import "./index.css";
 //   render() {
 //     return (
 //       <button
-//         className="square"
-//         onClick={() => this.props.onClick({ value: "X" })}
+//         className='square'
+//         onClick={() => this.props.onClick({ value: 'X' })}
 //       >
 //         {this.props.value}
 //       </button>
@@ -21,22 +21,20 @@ import "./index.css";
 //   }
 // }
 
-function Square(props){
+function Square(props) {
   return (
-    <button
-        className="square"
-        onClick={props.onClick}
-      >
-        {props.value}
-      </button>
-  )
+    <button className="square" onClick={props.onClick}>
+      {props.value}
+    </button>
+  );
 }
 
 class Board extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      squares: Array(9).fill(null)
+      squares: Array(9).fill(null),
+      isXNext: true
     };
   }
   renderSquare(i) {
@@ -50,12 +48,22 @@ class Board extends React.Component {
 
   handleClick(i) {
     const squares = this.state.squares.slice();
-    squares[i] = "X";
-    this.setState({ squares });
+    if(calculateWinners(squares) || squares[i]){
+      return;
+    }
+    squares[i] = this.state.isXNext ? "X" : "0";
+    this.setState({ squares, isXNext: !this.state.isXNext });
   }
 
   render() {
-    const status = "Next Player: X";
+    const winner = calculateWinners(this.state.squares);
+    let status;
+    if (winner) {
+      status = "Winner is: " + winner;
+    } else {
+      status = "Next Player: " + (this.state.isXNext ? "X" : "0");
+    }
+
     return (
       <div>
         <div className="status">{status}</div>
@@ -90,6 +98,31 @@ class Game extends React.Component {
       </div>
     );
   }
+}
+
+function calculateWinners(squareMatrix) {
+  const lines = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9],
+    [1, 4, 7],
+    [2, 5, 8],
+    [3, 6, 9],
+    [1, 5, 9],
+    [3, 5, 7]
+  ];
+
+  for (let i=0; i<lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (
+      squareMatrix[a] &&
+      squareMatrix[a] === squareMatrix[b] &&
+      squareMatrix[a] === squareMatrix[c]
+    ) {
+      return squareMatrix[a];
+    }
+  }
+  return null;
 }
 
 ReactDOM.render(<Game />, document.getElementById("root"));
